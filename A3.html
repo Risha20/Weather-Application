@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+    <style>
+    textarea{
+        resize: vertical;
+        overflow: auto;
+    }
+    
+    .container {border-radius: 75px; border: 10px solid #c943399d; padding: 10px; text-align: center; width: 450px; height: 500px; margin: auto; background-color: #f2e3e1; opacity: 0.6; font-size: 20px;
+    }
+    
+    #spinner { border: 4px solid; border-radius: 50%; border-top: 4px solid white; width: 50px; height: 50px; animation: AAA 2s infinite; text-align: center;}
+    
+    @keyframes AAA {
+        0%   { transform: rotate(0deg); width: 30px; height: 30px; background: black; }
+        50%  { transform: rotate(0deg); width: 30px; height:30px; background: black; }
+        100% { transform: rotate(360deg); width: 30px; height: 30px; background: red; }
+    }
+    </style>
+    <meta charset="UTF-8">
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        
+        <script type = "text/javascript">
+            var query="";
+            var type = "";
+            function round(value, decimals) {
+                return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+            }
+        
+        $(document).ready( function() {
+            $("button").click(function(){
+                var zip = $("#zip").val();
+                if(zip != ''){
+                    $.ajax({
+                        type:"GET",
+                        url:"assignment_3.php",
+                        data:"zip="+zip,
+                        
+                        beforeSend:function() {
+                            $("#spinner").show(); $("#nospinner").html("");
+                        },
+                        error:function(xhr, status, error) {
+                            alert( "Error Message:  \r\nNumeric code is: "  + xhr.status + " \r\nError is " + error);
+                        },
+                        success:function(result) {
+                            $("#spinner").hide(); $("#nospinner").show();
+                        if(result!= '' && result.substr(1,1) != '\n') {
+                            s = JSON.parse(result);
+                            var TDate = new Date(s.sys.sunrise * 1000);
+                            var sunrise = TDate.toLocaleString();
+                            var TDate2 = new Date(s.sys.sunset * 1000);
+                            var sunset = TDate2.toLocaleString();
+                            type = s.weather[0].main;
+                            
+                            res = "<br><table style=\"background: #E0E0E0; text-align: center; margin: auto;\">" + s.name + 
+                            "<br><br>" + round(((s.main.temp * 1.8) + 32), 1) + "&deg;F" +
+                            "<br>Coordinates: " + s.coord.lon               + "&deg;, "     +      s.coord.lat+ "&deg;" +
+                            "<br><br>" + s.weather[0].main + ": " + s.weather[0].description + 
+                            "<br>" + "<img src='http://openweathermap.org/img/w/" + s.weather[0].icon + ".png" + "'>" +
+                            "<br>Humidity: " + s.main.humidity + "%" + 
+                            "<br>Pressure: " + s.main.pressure + "in" + 
+                            "<br>Wind speed: " + round(((s.wind.speed)/1000)/1.61,3) + " miles/sec" + ", " + round(((s.wind.speed*3600)/1000)/1.61,0)+ " miles/hr" + 
+                            "<br><br> Sunrise: " + sunrise + "<br>" + "Sunset: " + sunset;
+  
+                            query = result;
+                            $("#Demo").show();
+                            $("#text").html(result);
+
+                        $("#nospinner").html(res);
+                        //to change background based on Weather
+                        if(type == "Rain" || type == "Drizzle") {
+                            $('body').css('background-image','url(rain.jpg)');
+                        }
+                        
+                        else if(type == "Clouds" ) {
+                            $('body').css('background-image','url(cloudy.jpg)');
+                        }
+                        else if( type == "Thunderstorm") {
+                            $('body').css('background-image','url(thunderstorm.jpg)');
+                        }
+                        else if( type == "Snow") {
+                            $('body').css('background-image','url(snow.jpg)');
+                        }
+                        else if( type == "Haze" || type == "Mist" || type == "Fog" || type == "Smoke" || type == "Sand" || type == "Ash" || type == "Tornado" || type == "Squall") {
+                            $('body').css('background-image','url(fog.jpg)');
+                        }
+                        else if(type == "Clear") {
+                            $('body').css('background-image','url(clear.jpg)');
+                        }
+                        }
+                        else { 
+                            alert("Invalid zipcode. Please try again!");
+                            window.location.replace("https://web.njit.edu/~rjs83/download/ASSIGNMENT_3/A3.html");
+                        }
+                        }    
+                    });
+                }
+                else {
+                    $("#nospinner").show();
+                    $("#nospinner").html("Enter zipcode");
+                }
+            });            
+});   
+    </script>
+        
+        <body background="weather.jpg" style="background-position: center; background-size: 140%; background-repeat: no-repeat; margin: auto;">
+            
+            <div class = "container">
+                
+                <h1>Today's Weather Report</h1>
+                
+                <input id = "zip" type = "number" name = "zip" placeholder="Enter zipcode: 00000" autocomplete="off" min="0" required>
+                    
+                <button id = "btn" type = "BUTTON"><b>REQUEST WEATHER</b></button><br>
+                <table>
+                    <div id= "nospinner" style="display:none;" > </div></td>
+                    
+                    <div text-align= center; id= "spinner" style="display:none"></div>
+            </div>
+            </table>
+        </body>
+</html>
